@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Flask / SQLite
+instance/
+*.db
+*.sqlite3
+
+# Redis / Celery
+dump.rdb
+celerybeat-schedule*
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+.claude/
