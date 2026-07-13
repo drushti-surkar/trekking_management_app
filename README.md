@@ -35,7 +35,7 @@ Relationships: Staff↔Trek, Trek↔Booking, User↔Booking.
 - [x] M1 — Database models & schema
 - [x] M2 — Authentication & role-based access
 - [x] M3 — Admin dashboard
-- [ ] M4 — Trek staff dashboard
+- [x] M4 — Trek staff dashboard
 - [ ] M5 — User dashboard & booking
 - [ ] M6 — Booking history & status tracking
 - [ ] M7 — Celery jobs (reminders, reports, CSV export)

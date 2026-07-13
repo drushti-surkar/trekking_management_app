@@ -20,8 +20,10 @@ def create_app(config_class=Config):
     # API blueprints
     from api.auth import auth_bp
     from api.admin import admin_bp
+    from api.staff import staff_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(staff_bp)
 
     # Single Jinja2 entry point for the Vue (CDN) SPA
     @app.route("/")
