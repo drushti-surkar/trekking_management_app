@@ -1,14 +1,9 @@
-"""Programmatically create the database, seed roles, and the single Admin user.
-
-Run once:  python create_admin.py
-(Manual DB creation via DB Browser etc. is NOT allowed by the spec.)
-"""
 from flask_security import hash_password
 
 from app import app
 from extensions import db
 
-ADMIN_EMAIL = "admin@tma.com"
+ADMIN_EMAIL = "admin@manzil.com"
 ADMIN_PASSWORD = "admin123"
 
 
@@ -22,7 +17,6 @@ def seed():
             ds.find_or_create_role(name=role)
         db.session.commit()
 
-        # Single pre-existing Admin superuser
         if not ds.find_user(email=ADMIN_EMAIL):
             ds.create_user(
                 email=ADMIN_EMAIL,

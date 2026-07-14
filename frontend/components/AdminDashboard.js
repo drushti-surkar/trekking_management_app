@@ -5,6 +5,7 @@ const AdminDashboard = {
             stats: {},
             treks: [], staff: [], users: [], bookings: [],
             trekSearch: "", staffSearch: "", userSearch: "",
+            bookingStatus: "", bookingSearch: "",
             error: "",
             // Trek modal
             showTrekModal: false,
@@ -30,7 +31,10 @@ const AdminDashboard = {
             this.users = (await axios.get("/api/admin/users", { params: { q: this.userSearch } })).data;
         },
         async loadBookings() {
-            this.bookings = (await axios.get("/api/admin/bookings")).data;
+            const params = {};
+            if (this.bookingStatus) params.status = this.bookingStatus;
+            if (this.bookingSearch) params.q = this.bookingSearch;
+            this.bookings = (await axios.get("/api/admin/bookings", { params })).data;
         },
         switchTab(t) {
             this.tab = t;
@@ -215,6 +219,14 @@ const AdminDashboard = {
 
       <!-- BOOKINGS -->
       <div v-if="tab==='bookings'">
+        <div class="d-flex mb-3 gap-2">
+          <input v-model="bookingSearch" @input="loadBookings" class="form-control"
+                 placeholder="Search by trekker or trek">
+          <select v-model="bookingStatus" @change="loadBookings" class="form-select" style="max-width:200px">
+            <option value="">All statuses</option>
+            <option>Booked</option><option>Cancelled</option><option>Completed</option>
+          </select>
+        </div>
         <div class="table-responsive">
           <table class="table table-striped align-middle">
             <thead><tr><th>ID</th><th>Trekker</th><th>Trek</th><th>Status</th><th>Payment</th><th>Date</th></tr></thead>

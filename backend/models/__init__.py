@@ -1,16 +1,9 @@
-"""Database models for the Trekking Management Application.
-
-Roles: admin / staff / trekker (single role per user).
-Core tables: User, Role, StaffProfile, Trek, Booking.
-"""
 from datetime import datetime
 
 from flask_security.models import fsqla_v3 as fsqla
 
 from extensions import db
 
-# Wire Flask-Security's standard mixins to our db so User/Role get the
-# required fields (fs_uniquifier, active, password, roles link table, etc.)
 fsqla.FsModels.set_db_info(db)
 
 
@@ -28,7 +21,7 @@ class User(db.Model, fsqla.FsUserMixin):
         "StaffProfile", back_populates="user", uselist=False,
         cascade="all, delete-orphan",
     )
-    # Treks this user manages (only for staff)
+    
     assigned_treks = db.relationship(
         "Trek", back_populates="assigned_staff",
         foreign_keys="Trek.assigned_staff_id",

@@ -1,4 +1,6 @@
-"""Application configuration."""
+import os
+
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
@@ -22,3 +24,20 @@ class Config:
     SECURITY_CONFIRMABLE = False
     # API-only: never redirect unauthenticated requests to an HTML login view
     SECURITY_UNAUTHORIZED_VIEW = None
+
+    # Celery + Redis
+    CELERY_BROKER_URL = "redis://localhost:6379/0"
+    CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+
+    # Redis cache (separate db from the Celery broker)
+    CACHE_REDIS_URL = "redis://localhost:6379/1"
+    CACHE_TTL = 60  # seconds
+
+    # Email — local SMTP (Mailhog: SMTP 1025, web UI 8025)
+    MAIL_SERVER = "localhost"
+    MAIL_PORT = 1025
+    MAIL_SENDER = "no-reply@tma.local"
+    ADMIN_EMAIL = "admin@manzil.com"
+
+    # CSV export output directory
+    EXPORT_DIR = os.path.join(basedir, "exports")

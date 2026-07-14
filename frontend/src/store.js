@@ -1,4 +1,3 @@
-// Simple shared auth store (no Pinia — plain Vue reactive object + localStorage)
 const auth = Vue.reactive({
     token: localStorage.getItem("tma_token") || null,
     role: localStorage.getItem("tma_role") || null,

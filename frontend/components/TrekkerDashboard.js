@@ -8,6 +8,9 @@ const TrekkerDashboard = {
             profile: { name: "", email: "", password: "" },
             profileMsg: "",
             error: "",
+            // CSV export
+            exportState: "",      // "", "processing", "ready", "error"
+            exportFile: null,
         };
     },
     computed: { auth: () => auth },
@@ -65,6 +68,42 @@ const TrekkerDashboard = {
             } catch (e) {
                 this.error = e.response?.data?.error || "Could not update profile.";
             }
+        },
+        async startExport() {
+            this.exportState = "processing";
+            this.exportFile = null;
+            try {
+                const { data } = await axios.post("/api/trekker/export");
+                this.pollExport(data.task_id);
+            } catch (e) {
+                this.exportState = "error";
+            }
+        },
+        async pollExport(taskId) {
+            try {
+                const { data } = await axios.get(`/api/trekker/export/${taskId}/status`);
+                if (data.state === "SUCCESS") {
+                    this.exportState = "ready";
+                    this.exportFile = data.filename;
+                } else if (data.state === "FAILURE") {
+                    this.exportState = "error";
+                } else {
+                    setTimeout(() => this.pollExport(taskId), 1500);  // keep polling
+                }
+            } catch (e) {
+                this.exportState = "error";
+            }
+        },
+        downloadExport() {
+            // Trigger an authenticated download via blob (token is in the header)
+            axios.get(`/api/trekker/export/download/${this.exportFile}`, { responseType: "blob" })
+                .then(res => {
+                    const url = URL.createObjectURL(res.data);
+                    const a = document.createElement("a");
+                    a.href = url; a.download = this.exportFile;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
         },
         badgeClass(status) {
             return {
@@ -127,6 +166,20 @@ const TrekkerDashboard = {
 
       <!-- MY BOOKINGS -->
       <div v-if="tab==='bookings'">
+        <div class="d-flex align-items-center mb-3 gap-2">
+          <button class="btn btn-outline-success" @click="startExport"
+                  :disabled="exportState==='processing'">
+            {{ exportState==='processing' ? 'Preparing…' : 'Export History (CSV)' }}
+          </button>
+          <span v-if="exportState==='processing'" class="text-muted">
+            <span class="spinner-border spinner-border-sm"></span> Your export is being generated…
+          </span>
+          <span v-if="exportState==='ready'" class="text-success">
+            ✓ Export ready —
+            <a href="#" @click.prevent="downloadExport">download CSV</a>
+          </span>
+          <span v-if="exportState==='error'" class="text-danger">Export failed. Is the Celery worker running?</span>
+        </div>
         <div class="table-responsive">
           <table class="table table-striped align-middle">
             <thead><tr>

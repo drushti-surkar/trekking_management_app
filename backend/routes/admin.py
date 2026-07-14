@@ -1,8 +1,3 @@
-"""Admin API: dashboard stats, trek CRUD, staff management, assignment,
-user/staff/trek listing + search, blacklist toggle, and all bookings.
-
-Every endpoint requires a valid token AND the 'admin' role.
-"""
 from datetime import datetime
 
 from flask import Blueprint, request, jsonify
@@ -10,6 +5,8 @@ from flask_security import auth_required, roles_required
 
 from extensions import db, security
 from models import User, Role, Trek, Booking, StaffProfile
+from utils import complete_trek_bookings
+from cache import invalidate_open_treks
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin")
 
@@ -17,9 +14,6 @@ DIFFICULTIES = {"Easy", "Moderate", "Hard"}
 TREK_STATUSES = {"Pending", "Approved", "Open", "Closed", "Completed"}
 
 
-# ----------------------------------------------------------------------------
-# Serializers
-# ----------------------------------------------------------------------------
 def trek_dict(t):
     active = [b for b in t.bookings if b.status == "Booked"]
     return {
@@ -80,9 +74,6 @@ def _parse_date(value):
     return datetime.strptime(value, "%Y-%m-%d").date()
 
 
-# ----------------------------------------------------------------------------
-# Dashboard stats
-# ----------------------------------------------------------------------------
 @admin_bp.get("/stats")
 @auth_required("token")
 @roles_required("admin")
@@ -97,9 +88,6 @@ def stats():
     )
 
 
-# ----------------------------------------------------------------------------
-# Treks (CRUD + assign staff)
-# ----------------------------------------------------------------------------
 @admin_bp.get("/treks")
 @auth_required("token")
 @roles_required("admin")
@@ -139,6 +127,7 @@ def create_trek():
     )
     db.session.add(trek)
     db.session.commit()
+    invalidate_open_treks()
     return jsonify(trek_dict(trek)), 201
 
 
@@ -169,6 +158,8 @@ def update_trek(trek_id):
         trek.total_slots = new_total
     if "status" in d:
         trek.status = d["status"]
+        if d["status"] == "Completed":
+            complete_trek_bookings(trek)  # roll active bookings to Completed
     if "assigned_staff_id" in d:
         trek.assigned_staff_id = d["assigned_staff_id"] or None
     if "start_date" in d:
@@ -177,6 +168,7 @@ def update_trek(trek_id):
         trek.end_date = _parse_date(d.get("end_date"))
 
     db.session.commit()
+    invalidate_open_treks()
     return jsonify(trek_dict(trek))
 
 
@@ -187,6 +179,7 @@ def delete_trek(trek_id):
     trek = Trek.query.get_or_404(trek_id)
     db.session.delete(trek)
     db.session.commit()
+    invalidate_open_treks()
     return jsonify(message="Trek deleted."), 200
 
 
@@ -214,9 +207,6 @@ def _validate_trek(d, creating):
     return None
 
 
-# ----------------------------------------------------------------------------
-# Staff management
-# ----------------------------------------------------------------------------
 @admin_bp.get("/staff")
 @auth_required("token")
 @roles_required("admin")
@@ -263,9 +253,6 @@ def create_staff():
     return jsonify(staff_dict(user)), 201
 
 
-# ----------------------------------------------------------------------------
-# Users
-# ----------------------------------------------------------------------------
 @admin_bp.get("/users")
 @auth_required("token")
 @roles_required("admin")
@@ -294,12 +281,24 @@ def toggle_active(user_id):
     return jsonify(id=user.id, active=user.active)
 
 
-# ----------------------------------------------------------------------------
-# Bookings
-# ----------------------------------------------------------------------------
 @admin_bp.get("/bookings")
 @auth_required("token")
 @roles_required("admin")
 def list_bookings():
-    bookings = Booking.query.order_by(Booking.id.desc()).all()
+    status = (request.args.get("status") or "").strip()
+    q = (request.args.get("q") or "").strip()
+
+    query = Booking.query
+    if status:
+        query = query.filter(Booking.status == status)
+    if q:
+        like = f"%{q}%"
+        query = (
+            query.join(User, Booking.user_id == User.id)
+            .join(Trek, Booking.trek_id == Trek.id)
+            .filter(
+                User.name.ilike(like) | User.email.ilike(like) | Trek.name.ilike(like)
+            )
+        )
+    bookings = query.order_by(Booking.id.desc()).all()
     return jsonify([booking_dict(b) for b in bookings])

@@ -1,9 +1,3 @@
-"""Authentication API: register (trekkers only), login, logout, current user.
-
-Uses Flask-Security-Too's datastore + password hashing + token auth.
-Admin and Staff are created elsewhere (script / admin dashboard); this
-`/register` endpoint always creates a plain Trekker.
-"""
 import re
 
 from flask import Blueprint, request, jsonify

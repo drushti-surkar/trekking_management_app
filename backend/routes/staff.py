@@ -1,19 +1,15 @@
-"""Trek Staff API: dashboard + operations limited to the staff member's
-own assigned treks. Every trek/booking action verifies ownership.
-"""
 from flask import Blueprint, request, jsonify
 from flask_security import auth_required, roles_required, current_user
 
 from extensions import db
 from models import Trek, Booking
-from utils import recalc_available_slots
+from utils import recalc_available_slots, complete_trek_bookings
+from cache import invalidate_open_treks
 
 staff_bp = Blueprint("staff", __name__, url_prefix="/api/staff")
 
-# Statuses a staff member is allowed to set on their trek.
-# (Pending/Approved are admin-side lifecycle stages.)
 STAFF_TREK_STATUSES = {"Open", "Closed", "Completed"}
-# Statuses a staff member can set on a participant's booking.
+
 STAFF_BOOKING_STATUSES = {"Booked", "Completed", "Cancelled"}
 
 
@@ -53,7 +49,6 @@ def _owned_trek_or_403(trek_id):
     return trek
 
 
-# ----------------------------------------------------------------------------
 @staff_bp.get("/stats")
 @auth_required("token")
 @roles_required("staff")
@@ -100,6 +95,7 @@ def update_slots(trek_id):
     trek.total_slots = new_total
     recalc_available_slots(trek)
     db.session.commit()
+    invalidate_open_treks()
     return jsonify(trek_dict(trek))
 
 
@@ -117,7 +113,10 @@ def update_status(trek_id):
         return jsonify(error=f"Status must be one of {sorted(STAFF_TREK_STATUSES)}."), 400
 
     trek.status = status
+    if status == "Completed":
+        complete_trek_bookings(trek)  # roll active bookings to Completed
     db.session.commit()
+    invalidate_open_treks()
     return jsonify(trek_dict(trek))
 
 

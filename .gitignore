@@ -13,6 +13,9 @@ instance/
 dump.rdb
 celerybeat-schedule*
 
+# CSV exports (generated at runtime)
+exports/
+
 # OS / editor
 .DS_Store
 .vscode/
