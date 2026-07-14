@@ -39,6 +39,29 @@
             min-height: 150px;
         }
         .auth-form-side { padding: 2.5rem; }
+
+        /* Brand overlay on the photo collage */
+        .auth-media { position: relative; }
+        .auth-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(18,38,28,.15), rgba(14,28,44,.80));
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 2rem; color: #fff;
+        }
+        .auth-overlay .brand { font-size: 2.6rem; font-weight: 700; letter-spacing: 1px; margin: 0; }
+        .auth-overlay .brand-sub {
+            text-transform: uppercase; letter-spacing: 3px;
+            font-size: .78rem; opacity: .9; margin: .25rem 0 .9rem;
+        }
+        .auth-overlay .brand-quote { font-style: italic; opacity: .95; margin: 0; font-size: .95rem; }
+
+        /* Feature highlights (inline SVG icons — no emoji, no icon library) */
+        .auth-features .feat { padding: .5rem .25rem; }
+        .auth-features .feat svg { width: 26px; height: 26px; color: #2f6b4f; }
+        .auth-features .feat-label { font-size: .74rem; color: #555; margin-top: .35rem; display: block; }
+
+        /* Navbar mini logo */
+        .brand-logo { width: 22px; height: 22px; vertical-align: -4px; margin-right: 6px; }
     </style>
 </head>
 <body class="bg-light">

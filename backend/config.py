@@ -38,6 +38,7 @@ class Config:
     MAIL_PORT = 1025
     MAIL_SENDER = "no-reply@tma.local"
     ADMIN_EMAIL = "admin@manzil.com"
+    ADMIN_PASSWORD = "admin123"
 
     # CSV export output directory
     EXPORT_DIR = os.path.join(basedir, "exports")

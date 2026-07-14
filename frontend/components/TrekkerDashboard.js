@@ -145,7 +145,7 @@ const TrekkerDashboard = {
             <div class="card h-100 shadow-sm">
               <div class="card-body d-flex flex-column">
                 <h5 class="card-title text-success mb-1">{{ t.name }}</h5>
-                <div class="text-muted mb-2">📍 {{ t.location }}</div>
+                <div class="text-muted mb-2">{{ t.location }}</div>
                 <ul class="list-unstyled small mb-3">
                   <li><strong>Difficulty:</strong> {{ t.difficulty }}</li>
                   <li><strong>Duration:</strong> {{ t.duration_days }} days</li>
@@ -153,7 +153,7 @@ const TrekkerDashboard = {
                   <li v-if="t.start_date"><strong>Starts:</strong> {{ t.start_date }}</li>
                 </ul>
                 <div class="mt-auto">
-                  <button v-if="t.already_booked" class="btn btn-outline-success w-100" disabled>✓ Booked</button>
+                  <button v-if="t.already_booked" class="btn btn-outline-success w-100" disabled>Booked</button>
                   <button v-else-if="t.available_slots<=0" class="btn btn-outline-secondary w-100" disabled>Full</button>
                   <button v-else class="btn btn-success w-100" @click="bookTrek(t)">Book Now</button>
                 </div>
@@ -175,7 +175,7 @@ const TrekkerDashboard = {
             <span class="spinner-border spinner-border-sm"></span> Your export is being generated…
           </span>
           <span v-if="exportState==='ready'" class="text-success">
-            ✓ Export ready —
+            Export ready —
             <a href="#" @click.prevent="downloadExport">download CSV</a>
           </span>
           <span v-if="exportState==='error'" class="text-danger">Export failed. Is the Celery worker running?</span>

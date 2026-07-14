@@ -54,8 +54,32 @@ def create_app(config_class=Config):
 app = create_app()
 
 
-if __name__ == "__main__":
+def seed_admin():
+    """Create tables, the three roles, and the single admin — idempotently.
+    Runs automatically on startup so a fresh clone works with just app.py.
+    """
+    from flask_security import hash_password
+
     with app.app_context():
         db.create_all()
+        ds = app.user_datastore
+        for role in ("admin", "staff", "trekker"):
+            ds.find_or_create_role(name=role)
+        db.session.commit()
+
+        email = app.config["ADMIN_EMAIL"]
+        if not ds.find_user(email=email):
+            ds.create_user(
+                email=email,
+                username="admin",
+                name="Administrator",
+                password=hash_password(app.config["ADMIN_PASSWORD"]),
+                roles=["admin"],
+            )
+            db.session.commit()
+
+
+if __name__ == "__main__":
+    seed_admin()  # auto-create DB + admin if missing
     # Port 5001: macOS uses 5000 for AirPlay Receiver
     app.run(debug=True, port=5001)

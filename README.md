@@ -32,11 +32,13 @@ backend/           Flask API
 python3 -m venv venv
 source venv/bin/activate
 pip install -r backend/requirements.txt
-python backend/create_admin.py     # creates DB, seeds roles + Admin
-python backend/app.py              # runs on http://localhost:5001
+python backend/app.py              # auto-creates DB + admin, runs on http://localhost:5001
 ```
+On first run `app.py` programmatically creates the tables, roles, and the admin
+(idempotent — existing data is never overwritten). To seed without starting the
+server, run `python backend/create_admin.py` instead.
 
-Default admin: `admin@tma.com` / `admin123`
+Default admin: `admin@manzil.com` / `admin123`
 
 ### Background jobs (Celery + Redis)
 Requires Redis running (`redis-server`) and, for email, Mailhog (`localhost:1025`).
