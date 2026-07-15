@@ -1,6 +1,7 @@
 const StaffDashboard = {
     data() {
         return {
+            tab: "treks",
             stats: {},
             treks: [],
             error: "",
@@ -11,10 +12,30 @@ const StaffDashboard = {
             showParticipants: false,
             currentTrek: null,
             participants: [],
+            // analytics
+            analytics: null,
+            charts: [],
         };
     },
     computed: { auth: () => auth },
+    beforeUnmount() { this.charts.forEach(c => c.destroy()); },
     methods: {
+        switchTab(t) {
+            this.tab = t;
+            if (t === "analytics") this.loadAnalytics();
+        },
+        async loadAnalytics() {
+            this.analytics = (await axios.get("/api/staff/analytics")).data;
+            this.$nextTick(() => this.renderCharts());
+        },
+        renderCharts() {
+            this.charts.forEach(c => c.destroy());
+            this.charts = [
+                TMACharts.popularTreks(this.$refs.sPopular, this.analytics),
+                TMACharts.monthlyTrend(this.$refs.sTrend, this.analytics),
+                TMACharts.statusBreakdown(this.$refs.sStatus, this.analytics),
+            ];
+        },
         async loadAll() {
             this.stats = (await axios.get("/api/staff/stats")).data;
             this.treks = (await axios.get("/api/staff/treks")).data;
@@ -82,8 +103,17 @@ const StaffDashboard = {
         </div>
       </div>
 
-      <h5>My Assigned Treks</h5>
-      <div class="table-responsive">
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+          <a class="nav-link" :class="{active: tab==='treks'}" href="#" @click.prevent="switchTab('treks')">My Treks</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" :class="{active: tab==='analytics'}" href="#" @click.prevent="switchTab('analytics')">Analytics</a>
+        </li>
+      </ul>
+
+      <!-- MY TREKS -->
+      <div v-if="tab==='treks'" class="table-responsive">
         <table class="table table-striped align-middle">
           <thead><tr>
             <th>ID</th><th>Name</th><th>Location</th><th>Slots</th>
@@ -111,6 +141,31 @@ const StaffDashboard = {
             <tr v-if="!treks.length"><td colspan="7" class="text-center text-muted">No treks assigned to you yet.</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- ANALYTICS (scoped to my treks) -->
+      <div v-if="tab==='analytics'">
+        <div v-if="analytics" class="row g-3">
+          <div class="col-lg-8">
+            <div class="card shadow-sm h-100"><div class="card-body">
+              <h6 class="text-muted mb-3">Participation — My Treks</h6>
+              <div style="height:300px"><canvas ref="sPopular"></canvas></div>
+            </div></div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card shadow-sm h-100"><div class="card-body">
+              <h6 class="text-muted mb-3">Booking Status</h6>
+              <div style="height:300px"><canvas ref="sStatus"></canvas></div>
+            </div></div>
+          </div>
+          <div class="col-12">
+            <div class="card shadow-sm"><div class="card-body">
+              <h6 class="text-muted mb-3">Monthly Participation (last 6 months)</h6>
+              <div style="height:280px"><canvas ref="sTrend"></canvas></div>
+            </div></div>
+          </div>
+        </div>
+        <div v-else class="text-muted text-center py-4">Loading analytics…</div>
       </div>
 
       <!-- Slots modal -->

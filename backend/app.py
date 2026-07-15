@@ -38,10 +38,12 @@ def create_app(config_class=Config):
     from routes.admin import admin_bp
     from routes.staff import staff_bp
     from routes.trekker import trekker_bp
+    from routes.public import public_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(staff_bp)
     app.register_blueprint(trekker_bp)
+    app.register_blueprint(public_bp)
 
 
     @app.route("/")

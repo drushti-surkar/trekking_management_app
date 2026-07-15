@@ -72,6 +72,72 @@ def my_treks():
     return jsonify([trek_dict(t) for t in treks])
 
 
+@staff_bp.get("/analytics")
+@auth_required("token")
+@roles_required("staff")
+def analytics():
+    """Analytics scoped to the staff member's own assigned treks.
+    Returns the same shape as /api/public/stats so charts can be reused.
+    """
+    from collections import defaultdict
+    from datetime import date
+
+    treks = current_user.assigned_treks
+    my_bookings = [b for t in treks for b in t.bookings]
+    active = [b for b in my_bookings if b.status in ("Booked", "Completed")]
+
+    totals = {
+        "treks": len(treks),
+        "open_treks": sum(1 for t in treks if t.status == "Open"),
+        "completed_treks": sum(1 for t in treks if t.status == "Completed"),
+        "participants": len(active),
+    }
+
+    popular = []
+    for t in treks:
+        count = sum(1 for b in t.bookings if b.status in ("Booked", "Completed"))
+        if count:
+            popular.append({"name": t.name, "bookings": count})
+    popular.sort(key=lambda x: x["bookings"], reverse=True)
+    popular = popular[:5]
+
+    difficulty = {"Easy": 0, "Moderate": 0, "Hard": 0}
+    for t in treks:
+        if t.difficulty in difficulty:
+            difficulty[t.difficulty] += 1
+
+    month_abbr = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    today = date.today()
+    months = []
+    y, m = today.year, today.month
+    for i in range(5, -1, -1):
+        mm, yy = m - i, y
+        while mm <= 0:
+            mm += 12
+            yy -= 1
+        months.append((yy, mm))
+    bucket = defaultdict(int)
+    for b in my_bookings:
+        if b.booking_date:
+            bucket[(b.booking_date.year, b.booking_date.month)] += 1
+    monthly_trend = {
+        "labels": [month_abbr[mm] for (_, mm) in months],
+        "counts": [bucket.get((yy, mm), 0) for (yy, mm) in months],
+    }
+
+    status_breakdown = {
+        "Booked": sum(1 for b in my_bookings if b.status == "Booked"),
+        "Completed": sum(1 for b in my_bookings if b.status == "Completed"),
+        "Cancelled": sum(1 for b in my_bookings if b.status == "Cancelled"),
+    }
+
+    return jsonify(
+        totals=totals, popular_treks=popular, difficulty=difficulty,
+        monthly_trend=monthly_trend, status_breakdown=status_breakdown,
+    )
+
+
 @staff_bp.patch("/treks/<int:trek_id>/slots")
 @auth_required("token")
 @roles_required("staff")

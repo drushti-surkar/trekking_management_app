@@ -14,6 +14,9 @@ const AdminDashboard = {
             // Staff modal
             showStaffModal: false,
             staffForm: {},
+            // Analytics
+            analytics: null,
+            charts: [],
         };
     },
     computed: { auth: () => auth },
@@ -43,6 +46,20 @@ const AdminDashboard = {
             if (t === "staff") this.loadStaff();
             if (t === "users") this.loadUsers();
             if (t === "bookings") this.loadBookings();
+            if (t === "analytics") this.loadAnalytics();
+        },
+        async loadAnalytics() {
+            this.analytics = (await axios.get("/api/public/stats")).data;
+            this.$nextTick(() => this.renderCharts());
+        },
+        renderCharts() {
+            this.charts.forEach(c => c.destroy());
+            this.charts = [
+                TMACharts.popularTreks(this.$refs.aPopular, this.analytics),
+                TMACharts.monthlyTrend(this.$refs.aTrend, this.analytics),
+                TMACharts.statusBreakdown(this.$refs.aStatus, this.analytics),
+                TMACharts.difficulty(this.$refs.aDifficulty, this.analytics),
+            ];
         },
         // ---- Trek CRUD ----
         newTrek() {
@@ -113,12 +130,13 @@ const AdminDashboard = {
         },
     },
     mounted() { this.loadStats(); },
+    beforeUnmount() { this.charts.forEach(c => c.destroy()); },
     template: `
     <div>
       <h3 class="text-success mb-3">Admin Dashboard</h3>
 
       <ul class="nav nav-tabs mb-3">
-        <li class="nav-item" v-for="t in ['overview','treks','staff','users','bookings']" :key="t">
+        <li class="nav-item" v-for="t in ['overview','treks','staff','users','bookings','analytics']" :key="t">
           <a class="nav-link" :class="{active: tab===t}" href="#" @click.prevent="switchTab(t)">
             {{ t.charAt(0).toUpperCase() + t.slice(1) }}
           </a>
@@ -241,6 +259,37 @@ const AdminDashboard = {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div v-if="tab==='analytics'">
+        <div v-if="analytics" class="row g-3">
+          <div class="col-lg-8">
+            <div class="card shadow-sm h-100"><div class="card-body">
+              <h6 class="text-muted mb-3">Trek Participation — Most Popular Treks</h6>
+              <div style="height:300px"><canvas ref="aPopular"></canvas></div>
+            </div></div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card shadow-sm h-100"><div class="card-body">
+              <h6 class="text-muted mb-3">Booking Status</h6>
+              <div style="height:300px"><canvas ref="aStatus"></canvas></div>
+            </div></div>
+          </div>
+          <div class="col-lg-8">
+            <div class="card shadow-sm h-100"><div class="card-body">
+              <h6 class="text-muted mb-3">Monthly Participation (last 6 months)</h6>
+              <div style="height:280px"><canvas ref="aTrend"></canvas></div>
+            </div></div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card shadow-sm h-100"><div class="card-body">
+              <h6 class="text-muted mb-3">Treks by Difficulty</h6>
+              <div style="height:280px"><canvas ref="aDifficulty"></canvas></div>
+            </div></div>
+          </div>
+        </div>
+        <div v-else class="text-muted text-center py-4">Loading analytics…</div>
       </div>
 
       <!-- TREK MODAL -->
