@@ -6,7 +6,7 @@ from datetime import date, timedelta
 from flask import current_app
 
 from celery_app import celery
-from extensions import db  # noqa: F401  (kept for parity / future writes)
+from extensions import db
 from models import User, Trek, Booking, Role
 from emailer import send_email
 
@@ -46,14 +46,12 @@ def monthly_activity_report():
     last_month_end = first_this_month - timedelta(days=1)
     first_last_month = last_month_end.replace(day=1)
 
-    # Treks that ran last month (by start date)
     treks_conducted = Trek.query.filter(
         Trek.start_date.isnot(None),
         Trek.start_date >= first_last_month,
         Trek.start_date <= last_month_end,
     ).count()
 
-    # Participants (bookings placed last month, still active/completed)
     participants = Booking.query.filter(
         Booking.booking_date >= first_last_month,
         Booking.booking_date <= last_month_end + timedelta(days=1),

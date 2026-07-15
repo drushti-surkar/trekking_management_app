@@ -5,14 +5,11 @@ const StaffDashboard = {
             stats: {},
             treks: [],
             error: "",
-            // slots modal
             showSlotsModal: false,
             slotsForm: { id: null, name: "", total_slots: 0 },
-            // participants modal
             showParticipants: false,
             currentTrek: null,
             participants: [],
-            // analytics
             analytics: null,
             charts: [],
         };
@@ -40,7 +37,6 @@ const StaffDashboard = {
             this.stats = (await axios.get("/api/staff/stats")).data;
             this.treks = (await axios.get("/api/staff/treks")).data;
         },
-        // ---- slots ----
         openSlots(t) {
             this.slotsForm = { id: t.id, name: t.name, total_slots: t.total_slots };
             this.error = "";
@@ -58,7 +54,6 @@ const StaffDashboard = {
                 this.error = e.response?.data?.error || "Could not update slots.";
             }
         },
-        // ---- status ----
         async changeStatus(t, status) {
             try {
                 await axios.patch(`/api/staff/treks/${t.id}/status`, { status });
@@ -67,7 +62,6 @@ const StaffDashboard = {
                 alert(e.response?.data?.error || "Could not update status.");
             }
         },
-        // ---- participants ----
         async openParticipants(t) {
             this.currentTrek = t;
             this.participants = (await axios.get(`/api/staff/treks/${t.id}/participants`)).data;
@@ -88,7 +82,6 @@ const StaffDashboard = {
     <div>
       <h3 class="text-success mb-3">Trek Staff Dashboard</h3>
 
-      <!-- Stats -->
       <div class="row g-3 mb-4">
         <div class="col-4" v-for="c in [
               {label:'Assigned Treks', val:stats.assigned_treks, cls:'text-success'},
@@ -112,7 +105,6 @@ const StaffDashboard = {
         </li>
       </ul>
 
-      <!-- MY TREKS -->
       <div v-if="tab==='treks'" class="table-responsive">
         <table class="table table-striped align-middle">
           <thead><tr>
@@ -143,7 +135,6 @@ const StaffDashboard = {
         </table>
       </div>
 
-      <!-- ANALYTICS (scoped to my treks) -->
       <div v-if="tab==='analytics'">
         <div v-if="analytics" class="row g-3">
           <div class="col-lg-8">
@@ -168,7 +159,6 @@ const StaffDashboard = {
         <div v-else class="text-muted text-center py-4">Loading analytics…</div>
       </div>
 
-      <!-- Slots modal -->
       <div v-if="showSlotsModal" class="tma-modal-backdrop" @click.self="showSlotsModal=false">
         <div class="card tma-modal" style="max-width:420px">
           <div class="card-body">
@@ -185,7 +175,6 @@ const StaffDashboard = {
         </div>
       </div>
 
-      <!-- Participants modal -->
       <div v-if="showParticipants" class="tma-modal-backdrop" @click.self="showParticipants=false">
         <div class="card tma-modal">
           <div class="card-body">

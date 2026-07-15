@@ -8,8 +8,7 @@ const TrekkerDashboard = {
             profile: { name: "", email: "", password: "" },
             profileMsg: "",
             error: "",
-            // CSV export
-            exportState: "",      // "", "processing", "ready", "error"
+            exportState: "",
             exportFile: null,
         };
     },
@@ -88,14 +87,13 @@ const TrekkerDashboard = {
                 } else if (data.state === "FAILURE") {
                     this.exportState = "error";
                 } else {
-                    setTimeout(() => this.pollExport(taskId), 1500);  // keep polling
+                    setTimeout(() => this.pollExport(taskId), 1500);
                 }
             } catch (e) {
                 this.exportState = "error";
             }
         },
         downloadExport() {
-            // Trigger an authenticated download via blob (token is in the header)
             axios.get(`/api/trekker/export/download/${this.exportFile}`, { responseType: "blob" })
                 .then(res => {
                     const url = URL.createObjectURL(res.data);
@@ -123,7 +121,6 @@ const TrekkerDashboard = {
         </li>
       </ul>
 
-      <!-- BROWSE -->
       <div v-if="tab==='browse'">
         <div class="card card-body mb-3">
           <div class="row g-2">
@@ -164,7 +161,6 @@ const TrekkerDashboard = {
         </div>
       </div>
 
-      <!-- MY BOOKINGS -->
       <div v-if="tab==='bookings'">
         <div class="d-flex align-items-center mb-3 gap-2">
           <button class="btn btn-outline-success" @click="startExport"
@@ -202,7 +198,6 @@ const TrekkerDashboard = {
         </div>
       </div>
 
-      <!-- PROFILE -->
       <div v-if="tab==='profile'" class="row justify-content-center">
         <div class="col-md-6">
           <div class="card shadow-sm">

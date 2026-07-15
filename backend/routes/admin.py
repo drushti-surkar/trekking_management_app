@@ -159,7 +159,7 @@ def update_trek(trek_id):
     if "status" in d:
         trek.status = d["status"]
         if d["status"] == "Completed":
-            complete_trek_bookings(trek)  # roll active bookings to Completed
+            complete_trek_bookings(trek)
     if "assigned_staff_id" in d:
         trek.assigned_staff_id = d["assigned_staff_id"] or None
     if "start_date" in d:

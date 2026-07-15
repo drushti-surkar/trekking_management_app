@@ -15,12 +15,10 @@ def make_celery(flask_app):
         timezone="Asia/Kolkata",
         enable_utc=False,
         beat_schedule={
-            # Every day at 08:00 — remind trekkers about upcoming treks
             "daily-trek-reminders": {
                 "task": "tasks.daily_trek_reminders",
                 "schedule": crontab(hour=8, minute=0),
             },
-            # 1st of every month at 09:00 — monthly activity report to admin
             "monthly-activity-report": {
                 "task": "tasks.monthly_activity_report",
                 "schedule": crontab(day_of_month=1, hour=9, minute=0),
@@ -40,4 +38,4 @@ def make_celery(flask_app):
 
 celery = make_celery(app)
 
-import tasks 
+import tasks

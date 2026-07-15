@@ -1,6 +1,3 @@
-// Shared Chart.js builders used by the Admin and Staff analytics tabs.
-// Each builder returns a Chart instance so callers can destroy it before
-// re-rendering.
 const GREEN = "#2f6b4f";
 const PALETTE = ["#2f6b4f", "#1c3d5a", "#c77d3a", "#5b8a72", "#8a5b8a"];
 

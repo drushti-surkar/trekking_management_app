@@ -2,7 +2,7 @@ const App = {
     computed: { auth: () => auth },
     methods: {
         async logout() {
-            try { await axios.post("/api/logout"); } catch (e) { /* ignore */ }
+            try { await axios.post("/api/logout"); } catch (e) {  }
             auth.clear();
             this.$router.push("/login");
         },

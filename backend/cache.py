@@ -21,7 +21,7 @@ def cache_get(key):
     try:
         raw = _r().get(key)
         return json.loads(raw) if raw else None
-    except Exception as e:  # never let a cache issue break the request
+    except Exception as e:
         current_app.logger.warning(f"cache_get failed: {e}")
         return None
 
@@ -35,7 +35,6 @@ def cache_set(key, value, ttl=None):
 
 
 def invalidate_open_treks():
-    """Call after any change that affects the open-trek listing."""
     try:
         _r().delete(OPEN_TREKS_KEY)
     except Exception as e:

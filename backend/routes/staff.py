@@ -42,7 +42,6 @@ def participant_dict(b):
 
 
 def _owned_trek_or_403(trek_id):
-    """Return the trek only if it is assigned to the current staff member."""
     trek = Trek.query.get_or_404(trek_id)
     if trek.assigned_staff_id != current_user.id:
         return None
@@ -76,9 +75,6 @@ def my_treks():
 @auth_required("token")
 @roles_required("staff")
 def analytics():
-    """Analytics scoped to the staff member's own assigned treks.
-    Returns the same shape as /api/public/stats so charts can be reused.
-    """
     from collections import defaultdict
     from datetime import date
 
@@ -180,7 +176,7 @@ def update_status(trek_id):
 
     trek.status = status
     if status == "Completed":
-        complete_trek_bookings(trek)  # roll active bookings to Completed
+        complete_trek_bookings(trek)
     db.session.commit()
     invalidate_open_treks()
     return jsonify(trek_dict(trek))
@@ -211,6 +207,6 @@ def update_booking_status(booking_id):
         return jsonify(error=f"Status must be one of {sorted(STAFF_BOOKING_STATUSES)}."), 400
 
     booking.status = status
-    recalc_available_slots(booking.trek)  # freeing/occupying a seat
+    recalc_available_slots(booking.trek)
     db.session.commit()
     return jsonify(participant_dict(booking))

@@ -26,13 +26,11 @@ def _user_payload(user):
 
 @auth_bp.post("/register")
 def register():
-    """Trekker self-registration."""
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()
     email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
 
-    # Backend validation
     if not name or not email or not password:
         return jsonify(error="Name, email and password are required."), 400
     if not EMAIL_RE.match(email):
@@ -56,7 +54,6 @@ def register():
 
 @auth_bp.post("/login")
 def login():
-    """Login for any role; returns an auth token + role for redirect."""
     data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
@@ -77,7 +74,6 @@ def login():
 @auth_bp.post("/logout")
 @auth_required("token")
 def logout():
-    """Invalidate the current token (rotates the token uniquifier)."""
     security.datastore.set_uniquifier(current_user)
     db.session.commit()
     return jsonify(message="Logged out."), 200
@@ -86,7 +82,6 @@ def logout():
 @auth_bp.get("/me")
 @auth_required("token")
 def me():
-    """Return the current authenticated user (used to rehydrate the SPA)."""
     return jsonify(
         role=_role_name(current_user),
         name=current_user.name,

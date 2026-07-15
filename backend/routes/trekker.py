@@ -24,7 +24,6 @@ def trek_dict(t, user_booking=None):
         "status": t.status,
         "start_date": t.start_date.isoformat() if t.start_date else None,
         "end_date": t.end_date.isoformat() if t.end_date else None,
-        # is the current trekker already actively booked on this trek?
         "already_booked": bool(user_booking and user_booking.status in ("Booked", "Completed")),
     }
 
@@ -70,7 +69,6 @@ def browse_treks():
             it["already_booked"] = bool(b and b.status in ("Booked", "Completed"))
         return jsonify(items)
 
-    # Filtered searches hit the DB directly
     query = Trek.query.filter_by(status="Open")
     if q:
         query = query.filter(Trek.name.ilike(f"%{q}%"))
@@ -105,12 +103,11 @@ def book():
     if existing and existing.status in ("Booked", "Completed"):
         return jsonify(error="You have already booked this trek."), 409
 
-    # Capacity check (recompute from live bookings to be safe)
     recalc_available_slots(trek)
     if trek.available_slots <= 0:
         return jsonify(error="This trek is full."), 400
 
-    if existing:  # re-activate a previously cancelled booking (unique user+trek)
+    if existing:
         existing.status = "Booked"
         booking = existing
     else:
@@ -120,7 +117,7 @@ def book():
     db.session.flush()
     recalc_available_slots(trek)
     db.session.commit()
-    invalidate_open_treks()  # slots changed
+    invalidate_open_treks()
     return jsonify(booking_dict(booking)), 201
 
 
@@ -149,7 +146,7 @@ def cancel(booking_id):
     booking.status = "Cancelled"
     recalc_available_slots(booking.trek)
     db.session.commit()
-    invalidate_open_treks()  # a seat freed up
+    invalidate_open_treks()
     return jsonify(booking_dict(booking))
 
 
@@ -175,7 +172,6 @@ def update_profile():
         if len(password) < 6:
             return jsonify(error="Password must be at least 6 characters."), 400
         current_user.password = hash_password(password)
-        # rotate token so a password change invalidates old sessions
         db.session.add(current_user)
 
     db.session.commit()
@@ -186,7 +182,6 @@ def update_profile():
 @auth_required("token")
 @roles_required("trekker")
 def start_export():
-    # Lazy import breaks the Flask <-> Celery import cycle
     from tasks import export_bookings_csv
     task = export_bookings_csv.delay(current_user.id)
     return jsonify(task_id=task.id), 202
@@ -204,14 +199,13 @@ def export_status(task_id):
                        records=info.get("records"))
     if res.failed():
         return jsonify(state="FAILURE"), 200
-    return jsonify(state=res.state), 200  # PENDING / STARTED
+    return jsonify(state=res.state), 200
 
 
 @trekker_bp.get("/export/download/<path:fname>")
 @auth_required("token")
 @roles_required("trekker")
 def export_download(fname):
-    # Only allow a trekker to download their own export file
     if not fname.startswith(f"booking_history_{current_user.id}_"):
         return jsonify(error="Not your export file."), 403
     export_dir = current_app.config["EXPORT_DIR"]

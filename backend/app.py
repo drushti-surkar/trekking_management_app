@@ -57,9 +57,6 @@ app = create_app()
 
 
 def seed_admin():
-    """Create tables, the three roles, and the single admin — idempotently.
-    Runs automatically on startup so a fresh clone works with just app.py.
-    """
     from flask_security import hash_password
 
     with app.app_context():
@@ -82,6 +79,5 @@ def seed_admin():
 
 
 if __name__ == "__main__":
-    seed_admin()  # auto-create DB + admin if missing
-    # Port 5001: macOS uses 5000 for AirPlay Receiver
+    seed_admin()
     app.run(debug=True, port=5001)

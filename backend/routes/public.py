@@ -1,7 +1,3 @@
-"""Public (pre-login) analytics API — aggregate, read-only, no sensitive data.
-
-Exposes only counts and trek names; never user names/emails or bookings detail.
-"""
 from collections import defaultdict
 from datetime import date
 
@@ -36,7 +32,6 @@ def stats():
 
     active = [b for b in bookings if b.status in ("Booked", "Completed")]
 
-    # Totals
     totals = {
         "treks": len(treks),
         "open_treks": sum(1 for t in treks if t.status == "Open"),
@@ -44,7 +39,6 @@ def stats():
         "participants": len(active),
     }
 
-    # Most popular treks (top 5 by active + completed bookings)
     popular = []
     for t in treks:
         count = sum(1 for b in t.bookings if b.status in ("Booked", "Completed"))
@@ -53,13 +47,11 @@ def stats():
     popular.sort(key=lambda x: x["bookings"], reverse=True)
     popular = popular[:5]
 
-    # Difficulty distribution (of treks)
     difficulty = {"Easy": 0, "Moderate": 0, "Hard": 0}
     for t in treks:
         if t.difficulty in difficulty:
             difficulty[t.difficulty] += 1
 
-    # Monthly booking trend (last 6 months)
     bucket = defaultdict(int)
     for b in bookings:
         if b.booking_date:
@@ -70,7 +62,6 @@ def stats():
         "counts": [bucket.get((yy, mm), 0) for (yy, mm) in months],
     }
 
-    # Booking status breakdown
     status_breakdown = {
         "Booked": sum(1 for b in bookings if b.status == "Booked"),
         "Completed": sum(1 for b in bookings if b.status == "Completed"),

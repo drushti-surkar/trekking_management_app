@@ -7,14 +7,11 @@ const AdminDashboard = {
             trekSearch: "", staffSearch: "", userSearch: "",
             bookingStatus: "", bookingSearch: "",
             error: "",
-            // Trek modal
             showTrekModal: false,
             trekForm: {},
             trekEditing: false,
-            // Staff modal
             showStaffModal: false,
             staffForm: {},
-            // Analytics
             analytics: null,
             charts: [],
         };
@@ -61,7 +58,6 @@ const AdminDashboard = {
                 TMACharts.difficulty(this.$refs.aDifficulty, this.analytics),
             ];
         },
-        // ---- Trek CRUD ----
         newTrek() {
             this.trekEditing = false;
             this.trekForm = {
@@ -106,7 +102,6 @@ const AdminDashboard = {
             this.loadTreks();
             this.loadStats();
         },
-        // ---- Staff ----
         newStaff() {
             this.staffForm = { name: "", email: "", password: "", contact_number: "" };
             this.error = "";
@@ -123,7 +118,6 @@ const AdminDashboard = {
                 this.error = e.response?.data?.error || "Could not create staff.";
             }
         },
-        // ---- Users ----
         async toggleUser(u) {
             const { data } = await axios.patch(`/api/admin/users/${u.id}/toggle-active`);
             u.active = data.active;
@@ -143,7 +137,6 @@ const AdminDashboard = {
         </li>
       </ul>
 
-      <!-- OVERVIEW -->
       <div v-if="tab==='overview'" class="row g-3">
         <div class="col-6 col-md-3" v-for="c in [
               {label:'Treks', val:stats.total_treks, cls:'text-success'},
@@ -159,7 +152,6 @@ const AdminDashboard = {
         </div>
       </div>
 
-      <!-- TREKS -->
       <div v-if="tab==='treks'">
         <div class="d-flex mb-3 gap-2">
           <input v-model="trekSearch" @input="loadTreks" class="form-control" placeholder="Search treks by name / location / id">
@@ -189,7 +181,6 @@ const AdminDashboard = {
         </div>
       </div>
 
-      <!-- STAFF -->
       <div v-if="tab==='staff'">
         <div class="d-flex mb-3 gap-2">
           <input v-model="staffSearch" @input="loadStaff" class="form-control" placeholder="Search staff by name / email / id">
@@ -214,7 +205,6 @@ const AdminDashboard = {
         </div>
       </div>
 
-      <!-- USERS -->
       <div v-if="tab==='users'">
         <input v-model="userSearch" @input="loadUsers" class="form-control mb-3" placeholder="Search users by name / email / id">
         <div class="table-responsive">
@@ -235,7 +225,6 @@ const AdminDashboard = {
         </div>
       </div>
 
-      <!-- BOOKINGS -->
       <div v-if="tab==='bookings'">
         <div class="d-flex mb-3 gap-2">
           <input v-model="bookingSearch" @input="loadBookings" class="form-control"
@@ -261,7 +250,6 @@ const AdminDashboard = {
         </div>
       </div>
 
-      <!-- ANALYTICS -->
       <div v-if="tab==='analytics'">
         <div v-if="analytics" class="row g-3">
           <div class="col-lg-8">
@@ -292,7 +280,6 @@ const AdminDashboard = {
         <div v-else class="text-muted text-center py-4">Loading analytics…</div>
       </div>
 
-      <!-- TREK MODAL -->
       <div v-if="showTrekModal" class="tma-modal-backdrop" @click.self="showTrekModal=false">
         <div class="card tma-modal">
           <div class="card-body">
@@ -331,7 +318,6 @@ const AdminDashboard = {
         </div>
       </div>
 
-      <!-- STAFF MODAL -->
       <div v-if="showStaffModal" class="tma-modal-backdrop" @click.self="showStaffModal=false">
         <div class="card tma-modal">
           <div class="card-body">

@@ -12,15 +12,13 @@ const router = VueRouter.createRouter({
     routes,
 });
 
-// Role-based access control guard
 router.beforeEach(to => {
-    // Already-authed users shouldn't see login/register
     if ((to.path === "/login" || to.path === "/register") && auth.isAuthed()) {
         return "/" + auth.role;
     }
     if (to.meta.role) {
         if (!auth.isAuthed()) return "/login";
-        if (auth.role !== to.meta.role) return "/" + auth.role; // wrong role -> own dashboard
+        if (auth.role !== to.meta.role) return "/" + auth.role;
     }
     return true;
 });

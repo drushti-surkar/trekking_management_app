@@ -23,13 +23,11 @@ const auth = Vue.reactive({
     },
 });
 
-// Attach the auth token to every request
 axios.interceptors.request.use(cfg => {
     if (auth.token) cfg.headers["Authentication-Token"] = auth.token;
     return cfg;
 });
 
-// If the token is rejected, log out and bounce to login
 axios.interceptors.response.use(
     r => r,
     err => {
