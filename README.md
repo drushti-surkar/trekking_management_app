@@ -2,6 +2,17 @@
 
 MAD-II project by 23f2001500. Manzil - A role-based web app to manage trekking activities for **Admin**, **Trek Staff**, and **Trekkers (Users)**.
 
+## Screenshots
+
+| Login | Admin Analytics |
+|---|---|
+| ![Login](screenshots/login.png) | ![Admin Analytics](screenshots/admin-analytics.png) |
+
+| Staff Dashboard | Trekker Dashboard |
+|---|---|
+| ![Staff Dashboard](screenshots/staff-dashboard.png) | ![Trekker Dashboard](screenshots/trekker-dashboard.png) |
+
+
 ## Tech Stack
 - **Backend:** Flask + Flask-SQLAlchemy
 - **Auth:** Flask-Security-Too (token-based)
@@ -163,13 +174,4 @@ erDiagram
 |---|---|---|
 | GET | `/api/public/stats` | Aggregate stats for analytics charts |
 
-## Screenshots
-
-| Login | Admin Analytics |
-|---|---|
-| ![Login](screenshots/login.png) | ![Admin Analytics](screenshots/admin-analytics.png) |
-
-| Staff Dashboard | Trekker Dashboard |
-|---|---|
-| ![Staff Dashboard](screenshots/staff-dashboard.png) | ![Trekker Dashboard](screenshots/trekker-dashboard.png) |
 
